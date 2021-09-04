@@ -29,25 +29,51 @@ module {
     ];
 
     // Initial hash value, H(0).
-    private let H : [Nat32] = [
+    private let H256 : [Nat32] = [
         0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c,
         0x1f83d9ab, 0x5be0cd19,
+    ];
+    private let H224 : [Nat32] = [
+        0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31, 0x68581511,
+        0x64f98fa7, 0xbefa4fa4,
     ];
 
     private let chunk = 64;
 
     /// Returns the SHA256 checksum of the data.
     public func sum256(bs : [Nat8]) : [Nat8] {
-        let p = Partial();
-        p.write(bs);
-        return p.checkSum();
+        let h = Hash(false);
+        h.write(bs);
+        h.checkSum();
     };
 
-    private class Partial() = {
-        var h   : [var Nat32] = Array.thaw(H);
+    /// Returns the SHA224 checkum of the data.
+    public func sum224(bs : [Nat8]) : [Nat8] {
+        let h = Hash(true);
+        h.write(bs);
+        h.checkSum()
+    };
+
+    public class Hash(is224 : Bool) = {
+        var h   : [var Nat32] = switch (is224) {
+            case (false) { Array.thaw(H256); };
+            case (true)  { Array.thaw(H224); };
+        };
         var x   : [var Nat8]  = Array.init<Nat8>(64, 0);
         var nx                = 0;
         var len : Nat64       = 0;
+
+        // The size of the checksum in bytes.
+        public func size() : Nat {
+            switch (is224) {
+                case (false) { 32; };
+                case (true)  { 28; };
+            };
+        };
+
+        public func sum(bs : [Nat8]) : [Nat8] {
+            Array.append(bs, checkSum());
+        };
 
         public func checkSum() : [Nat8] {
             let n = len;
@@ -66,8 +92,9 @@ module {
             };
             write(Binary.BigEndian.fromNat64(n << 3));
             var digest : [Nat8] = [];
-            for (v in h.vals()) {
-                digest := Array.append(digest, Binary.BigEndian.fromNat32(v));
+            label l for (i in h.keys()) {
+                if (i == 7 and is224) { break l; };
+                digest := Array.append(digest, Binary.BigEndian.fromNat32(h[i]));
             };
             digest;
         };
