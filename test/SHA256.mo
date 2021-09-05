@@ -29,6 +29,14 @@ for (v in [
     assert(Hex.encode(SHA256.sum256(Blob.toArray(Text.encodeUtf8(v.0)))) == v.1);
 };
 
+do {
+    let h = SHA256.Hash(false);
+    h.write(Blob.toArray(Text.encodeUtf8("hello")));
+    h.write(Blob.toArray(Text.encodeUtf8(" ")));
+    h.write(Blob.toArray(Text.encodeUtf8("world")));
+    assert(Hex.encode(h.sum([])) == "B94D27B9934D3E08A52E52D7DA7DABFAC484EFE37A5380EE9088F7ACE2EFCDE9");
+};
+
 let sum224 = SHA256.sum224(Blob.toArray(Text.encodeUtf8("hello world\n")));
 assert(Hex.encode(sum224) == "95041DD60AB08C0BF5636D50BE85FE9790300F39EB84602858A9B430");
 
