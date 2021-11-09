@@ -1,3 +1,5 @@
+**MOVED/DEPRECATED**: use the [crypto](https://github.com/aviate-labs/crypto.mo) package instead!
+
 # SHA
 
 Provides the SHA256 hash algorithm as defined in FIPS 180-4.
